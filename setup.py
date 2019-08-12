@@ -6,7 +6,13 @@ setup(
     author="Francesco Milani",
     author_email="fmilani@bink.com",
     description="shared configurations storage",
-    packages=["."],
-    url="https://git.bink.com/bink-platform/daedalus",
+    url='https://git.bink.com/prototypes/shared-config-storage.git',
+    packages=[
+        'shared-config-storage/ubiquity'
+    ],
+    include_package_data=True,
+    install_requires=[],
+    license="Internal",
+    zip_safe=True,
     classifiers=("Programming Language :: Python :: 3",),
 )

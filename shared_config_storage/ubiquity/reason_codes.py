@@ -132,10 +132,10 @@ ubiquity_status_translation = {
 }
 
 
-def get_status_name_and_reason_code(status_code: int) -> Tuple[str, str]:
-    status_name = ubiquity_status_translation[status_code]
+def get_state_and_reason_code(status_code: int) -> Tuple[str, str]:
+    state = ubiquity_status_translation[status_code]
     reason_code = reason_code_translation[status_code]
-    return status_name, reason_code
+    return state, reason_code
 
 
 class StatusCodes(Enum):

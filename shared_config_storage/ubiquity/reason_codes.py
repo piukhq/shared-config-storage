@@ -1,3 +1,6 @@
+from enum import Enum
+from typing import Tuple
+
 REASON_CODES = (
     ('X000', 'New data submitted/modified'),
     ('X100', 'Add fields being validated'),
@@ -127,3 +130,14 @@ ubiquity_status_translation = {
     538: 'failed',
     442: 'pending'
 }
+
+
+def get_status_name_and_reason_code(status_code: int) -> Tuple[str, str]:
+    status_name = ubiquity_status_translation[status_code]
+    reason_code = reason_code_translation[status_code]
+    return status_name, reason_code
+
+
+class StatusCodes(Enum):
+    PENDING = 0
+    # todo add statuses as needed

@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="shared_config_storage",
-    version="0.1",
+    version="0.2",
     author="Francesco Milani",
     author_email="fmilani@bink.com",
     description="shared configurations storage",

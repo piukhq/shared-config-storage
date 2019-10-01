@@ -1,6 +1,7 @@
 from collections import namedtuple
 
 BinMatch = namedtuple('BinMatch', 'type len value')
+
 BIN_TO_PROVIDER = {
     'visa': [
         BinMatch(type='equal', len=1, value='4'),
@@ -16,17 +17,15 @@ BIN_TO_PROVIDER = {
 }
 
 
-def bin_to_provider(first_6):
-    slug = 'other'
+def bin_to_provider(bin_first_six: str) -> str:
     match_to_first_6 = {
-        'range': lambda match: match.value[0] <= int(first_6[:match.len]) <= match.value[1],
-        'equal': lambda match: first_6[:match.len] == match.value
+        'range': lambda match: match.value[0] <= int(bin_first_six[:match.len]) <= match.value[1],
+        'equal': lambda match: bin_first_six[:match.len] == match.value
     }
 
     for provider, values in BIN_TO_PROVIDER.items():
         for bin_match in values:
             if match_to_first_6[bin_match.type](bin_match):
-                slug = provider
-                break
+                return provider
 
-    return slug
+    return 'other'

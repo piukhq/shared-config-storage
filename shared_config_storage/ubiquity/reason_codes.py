@@ -54,7 +54,8 @@ CURRENT_STATUS_CODES = (
     (439, 'General Error such as incorrect user details'),
     (441, 'Join in progress'),
     (538, 'A system error occurred during join'),
-    (442, 'Asynchronous join in progress')
+    (442, 'Asynchronous join in progress'),
+    (901, 'Join Failed')
 )
 
 reason_code_translation = {
@@ -78,7 +79,7 @@ reason_code_translation = {
     444: 'X101',
     536: None,
     535: None,
-    445: None,
+    445: 'X202',
     537: None,
     401: None,
     406: 'X105',
@@ -91,7 +92,8 @@ reason_code_translation = {
     439: None,
     441: None,
     538: None,
-    442: 'X100'
+    442: 'X100',
+    901: 'X201'
 }
 
 ubiquity_status_translation = {
@@ -128,7 +130,8 @@ ubiquity_status_translation = {
     439: 'failed',
     441: 'failed',
     538: 'failed',
-    442: 'pending'
+    442: 'pending',
+    901: 'failed'
 }
 
 

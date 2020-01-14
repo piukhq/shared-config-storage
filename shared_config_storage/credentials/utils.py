@@ -1,10 +1,10 @@
 import hashlib
-
+import json
 from enum import Enum
 
 
-def hash_credential(credential: str) -> str:
-    return hashlib.md5(credential.encode()).hexdigest()
+def generate_lookup_hash(credentials: dict) -> str:
+    return hashlib.md5(json.dumps(credentials, sort_keys=True).encode()).hexdigest()
 
 
 class AnswerTypeChoices(Enum):

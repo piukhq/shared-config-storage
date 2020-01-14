@@ -1,8 +1,9 @@
 from setuptools import setup
+import shared_config_storage
 
 setup(
     name="shared_config_storage",
-    version="1.1",
+    version=shared_config_storage.__version__,
     author="Francesco Milani",
     author_email="fmilani@bink.com",
     description="shared configurations storage",

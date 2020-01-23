@@ -1,8 +1,19 @@
 import base64
 import hashlib
+from enum import Enum
 
+import hvac
+import requests
 from Crypto import Random
-from Crypto.Cipher import AES
+from Crypto.Cipher import AES, PKCS1_OAEP
+from Crypto.PublicKey import RSA
+from hvac.exceptions import Forbidden
+
+
+class KeyTypes(str, Enum):
+    PUBLIC_KEY = "public_key"
+    PRIVATE_KEY = "private_key"
+    SALT = "salt"
 
 
 class AESCipher(object):
@@ -33,3 +44,57 @@ class AESCipher(object):
     @staticmethod
     def _unpad(s):
         return s[:-ord(s[len(s) - 1:])]
+
+
+class RSACipher:
+    """
+    Encrypts/decrypts data using a per-client secret stored in hashicorp vault.
+    This should only be used for data within a few hundred bytes in size due
+    to RSA limitations.
+
+    RSA is only able to encrypt data to a maximum amount equal to your
+    key size (2048 bits = 256 bytes), minus any padding and header data
+    (11 bytes for PKCS#1 v1. 5 padding)
+    """
+    def __init__(self, vault_token, vault_url, bundle_id=None):
+        self.pub_key = None
+        self.priv_key = None
+        self.bundle_id = bundle_id
+        self.vault_token = vault_token
+        self.vault_url = vault_url
+
+    def encrypt(self, val):
+        if not self.pub_key:
+            self.pub_key = RSA.import_key(self.get_secret_key(self.bundle_id, KeyTypes.PUBLIC_KEY))
+
+        cipher = PKCS1_OAEP.new(self.pub_key)
+
+        # convert all values to string before encoding as some values may be integers
+        encrypted_val = cipher.encrypt(str(val).encode())
+        # encrypted byte string cannot be sent in JSON so must be converted
+        return base64.b64encode(encrypted_val).decode('utf-8')
+
+    def decrypt(self, val):
+        val = base64.b64decode(val.encode())
+
+        if not self.priv_key:
+            self.priv_key = RSA.import_key(self.get_secret_key(self.bundle_id, KeyTypes.PRIVATE_KEY))
+        cipher = PKCS1_OAEP.new(self.priv_key)
+
+        decrypted_val = cipher.decrypt(val).decode('utf-8')
+        return decrypted_val
+
+    def get_secret_key(self, save_path, key_name):
+        if not save_path or not self.bundle_id:
+            raise Exception("Missing bundle_id for retrieving public key")
+        elif self.bundle_id and not save_path:
+            save_path = self.bundle_id
+
+        client = hvac.Client(token=self.vault_token, url=self.vault_url)
+        try:
+            val = client.read(f'secret/data/{save_path}')['data']['data'][key_name]
+            return val
+        except TypeError as e:
+            raise ValueError('Could not locate security credentials in vault') from e
+        except (requests.RequestException, hvac.exceptions.VaultError) as e:
+            raise ConnectionError('Error connecting to vault') from e

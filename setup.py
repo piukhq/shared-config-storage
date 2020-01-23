@@ -15,7 +15,9 @@ setup(
     ],
     include_package_data=True,
     install_requires=[
-        'pycryptodome'
+        'pycryptodome',
+        'requests',
+        'hvac',
     ],
     license="Internal",
     zip_safe=True,

@@ -66,7 +66,9 @@ class RSACipher:
 
     def encrypt(self, val: Union[str, int, Dict, Iterable]) -> str:
         if not self.pub_key:
-            self.pub_key = RSA.import_key(self.get_secret_key(self.bundle_id, KeyTypes.PUBLIC_KEY))
+            self.pub_key = RSA.import_key(
+                self.get_secret_key(self.bundle_id, KeyTypes.PUBLIC_KEY)
+            )
 
         cipher = PKCS1_OAEP.new(self.pub_key)
 
@@ -79,11 +81,13 @@ class RSACipher:
         try:
             val = base64.b64decode(val.encode())
         except AttributeError as e:
-            raise TypeError(
-                f"Unable to decrypt value. Value must be of type string: {val}") from e
+            err_msg = f"Unable to decrypt value. Value must be of type string: {val}"
+            raise TypeError(err_msg) from e
 
         if not self.priv_key:
-            self.priv_key = RSA.import_key(self.get_secret_key(self.bundle_id, KeyTypes.PRIVATE_KEY))
+            self.priv_key = RSA.import_key(
+                self.get_secret_key(self.bundle_id, KeyTypes.PRIVATE_KEY)
+            )
         cipher = PKCS1_OAEP.new(self.priv_key)
 
         decrypted_val = cipher.decrypt(val).decode('utf-8')

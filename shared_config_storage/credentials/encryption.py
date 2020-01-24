@@ -1,6 +1,7 @@
 import base64
 import hashlib
 from enum import Enum
+from typing import Union, Dict, Iterable
 
 import hvac
 import requests
@@ -56,16 +57,18 @@ class RSACipher:
     key size (2048 bits = 256 bytes), minus any padding and header data
     (11 bytes for PKCS#1 v1. 5 padding)
     """
-    def __init__(self, vault_token, vault_url, bundle_id=None):
+    def __init__(self, vault_token: str, vault_url: str, bundle_id: str = None):
         self.pub_key = None
         self.priv_key = None
         self.bundle_id = bundle_id
         self.vault_token = vault_token
         self.vault_url = vault_url
 
-    def encrypt(self, val):
+    def encrypt(self, val: Union[str, int, Dict, Iterable]) -> str:
         if not self.pub_key:
-            self.pub_key = RSA.import_key(self.get_secret_key(self.bundle_id, KeyTypes.PUBLIC_KEY))
+            self.pub_key = RSA.import_key(
+                self.get_secret_key(self.bundle_id, KeyTypes.PUBLIC_KEY)
+            )
 
         cipher = PKCS1_OAEP.new(self.pub_key)
 
@@ -74,17 +77,23 @@ class RSACipher:
         # encrypted byte string cannot be sent in JSON so must be converted
         return base64.b64encode(encrypted_val).decode('utf-8')
 
-    def decrypt(self, val):
-        val = base64.b64decode(val.encode())
+    def decrypt(self, val: str) -> str:
+        try:
+            val = base64.b64decode(val.encode())
+        except AttributeError as e:
+            err_msg = f"Unable to decrypt value. Value must be of type string: {val}"
+            raise TypeError(err_msg) from e
 
         if not self.priv_key:
-            self.priv_key = RSA.import_key(self.get_secret_key(self.bundle_id, KeyTypes.PRIVATE_KEY))
+            self.priv_key = RSA.import_key(
+                self.get_secret_key(self.bundle_id, KeyTypes.PRIVATE_KEY)
+            )
         cipher = PKCS1_OAEP.new(self.priv_key)
 
         decrypted_val = cipher.decrypt(val).decode('utf-8')
         return decrypted_val
 
-    def get_secret_key(self, save_path, key_name):
+    def get_secret_key(self, save_path: str, key_name: str) -> str:
         if not save_path or not self.bundle_id:
             raise Exception("Missing bundle_id for retrieving public key")
         elif self.bundle_id and not save_path:

@@ -11,7 +11,8 @@ setup(
     packages=[
         'shared_config_storage',
         'shared_config_storage/ubiquity',
-        'shared_config_storage/credentials'
+        'shared_config_storage/credentials',
+        'shared_config_storage/vault'
     ],
     include_package_data=True,
     install_requires=[

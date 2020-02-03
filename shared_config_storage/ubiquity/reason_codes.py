@@ -143,4 +143,5 @@ def get_state_and_reason_code(status_code: int) -> Tuple[str, str]:
 
 class StatusCodes(Enum):
     PENDING = 0
+    JOIN = 900
     # todo add statuses as needed

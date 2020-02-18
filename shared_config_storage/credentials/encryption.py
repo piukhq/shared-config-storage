@@ -7,6 +7,7 @@ import hvac
 import requests
 from Crypto import Random
 from Crypto.Cipher import AES, PKCS1_OAEP
+from Crypto.Hash import BLAKE2s
 from Crypto.PublicKey import RSA
 from hvac.exceptions import Forbidden
 
@@ -107,3 +108,65 @@ class RSACipher:
             raise ValueError('Could not locate security credentials in vault') from e
         except (requests.RequestException, hvac.exceptions.VaultError) as e:
             raise ConnectionError('Error connecting to vault') from e
+
+
+class BLAKE2sHash:
+    """
+    Hashes a string using the BLAKE2s algorithm.
+
+    If a key/salt is provided to .new(), there is no need to provide vault
+    details in __init__().
+
+    If a key/salt is not provided then there will be an attempt to locate
+    one in Hashicorp vault using the secret_path and key_name.
+
+    :param vault_token: Authorisation token to access Hashicorp Vault
+    :param vault_url: URL to access Hashicorp Vault
+    :param secret_path: Path in the Vault where the hash secret is stored
+    :param key_name: Name of the secret under which it is stored
+    """
+    def __init__(
+            self,
+            vault_token: str = None,
+            vault_url: str = None,
+            secret_path: str = 'pcard_hash_secret',
+            key_name: str = 'salt'
+    ) -> None:
+        self.vault_token = vault_token
+        self.vault_url = vault_url
+        self.hash_secret = None
+        self.secret_path = secret_path
+        self.key_name = key_name
+
+    def get_secret_key(self, path: str = None, key_name: str = None) -> str:
+        if self.hash_secret:
+            return self.hash_secret
+
+        if not path:
+            path = self.secret_path
+
+        if not self.vault_url and self.vault_token:
+            raise AttributeError("Missing vault token and vault url")
+
+        client = hvac.Client(token=self.vault_token, url=self.vault_url)
+        try:
+            val = client.read(f'secret/data/{path}')['data']['data'][key_name]
+        except TypeError as e:
+            raise ValueError("Could not locate security credentials in vault") from e
+        except (requests.RequestException, hvac.exceptions.VaultError) as e:
+            raise ConnectionError("Error connecting to vault") from e
+
+        self.hash_secret = val
+        return val
+
+    def new(self, obj: str, digest_bits: int = 256, key: str = None) -> str:
+        if not key:
+            try:
+                key = self.get_secret_key(self.secret_path, key_name=self.key_name)
+            except KeyError as e:
+                raise ValueError(f"{self.key_name} not found in vault.") from e
+
+        hash2 = BLAKE2s.new(digest_bits=digest_bits, key=key.encode())
+        hash2.update(obj.encode())
+
+        return hash2.hexdigest()

@@ -111,14 +111,38 @@ class RSACipher:
 
 
 class BLAKE2sHash:
-    def __init__(self, vault_token=None, vault_url=None):
+    """
+    Hashes a string using the BLAKE2s algorithm.
+
+    If a key/salt is provided, there is no need to provide vault details in __init__().
+
+    If a key/salt is not provided to .new() then there will be an attempt to locate
+    one in Hashicorp vault using the secret_path and key_name.
+
+    :param vault_token: Authorisation token to access Hashicorp Vault
+    :param vault_url: URL to access Hashicorp Vault
+    :param secret_path: Path in the Vault where the hash secret is stored
+    :param key_name: Name of the secret under which it is stored
+    """
+    def __init__(
+            self,
+            vault_token: str = None,
+            vault_url: str = None,
+            secret_path: str = 'pcard_hash_secret',
+            key_name: str = 'salt'
+    ) -> None:
         self.vault_token = vault_token
         self.vault_url = vault_url
         self.hash_secret = None
+        self.secret_path = secret_path
+        self.key_name = key_name
 
-    def get_secret_key(self, path='pcard_hash_secret', key_name: str = None):
+    def get_secret_key(self, path: str = None, key_name: str = None) -> str:
         if self.hash_secret:
             return self.hash_secret
+
+        if not path:
+            path = self.secret_path
 
         if not self.vault_url and self.vault_token:
             raise AttributeError("Missing vault token and vault url")
@@ -134,15 +158,12 @@ class BLAKE2sHash:
         self.hash_secret = val
         return val
 
-    def new(self, obj, digest_bits=256, key=None):
-        key_name = 'salt'
-        hash_location = 'pcard_hash_secret'
-
+    def new(self, obj: str, digest_bits: int = 256, key: str = None) -> str:
         if not key:
             try:
-                key = self.get_secret_key(hash_location, key_name=key_name)
+                key = self.get_secret_key(self.secret_path, key_name=self.key_name)
             except KeyError as e:
-                raise ValueError(f"{key_name} not found in vault.") from e
+                raise ValueError(f"{self.key_name} not found in vault.") from e
 
         hash2 = BLAKE2s.new(digest_bits=digest_bits, key=key.encode())
         hash2.update(obj.encode())

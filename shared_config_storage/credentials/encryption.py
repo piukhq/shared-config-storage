@@ -152,9 +152,9 @@ class BLAKE2sHash:
         try:
             val = client.read(f'secret/data/{path}')['data']['data'][key_name]
         except TypeError as e:
-            raise ValueError('Could not locate security credentials in vault') from e
+            raise ValueError("Could not locate security credentials in vault") from e
         except (requests.RequestException, hvac.exceptions.VaultError) as e:
-            raise ConnectionError('Error connecting to vault') from e
+            raise ConnectionError("Error connecting to vault") from e
 
         self.hash_secret = val
         return val

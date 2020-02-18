@@ -114,9 +114,10 @@ class BLAKE2sHash:
     """
     Hashes a string using the BLAKE2s algorithm.
 
-    If a key/salt is provided, there is no need to provide vault details in __init__().
+    If a key/salt is provided to .new(), there is no need to provide vault
+    details in __init__().
 
-    If a key/salt is not provided to .new() then there will be an attempt to locate
+    If a key/salt is not provided then there will be an attempt to locate
     one in Hashicorp vault using the secret_path and key_name.
 
     :param vault_token: Authorisation token to access Hashicorp Vault

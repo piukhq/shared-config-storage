@@ -7,7 +7,7 @@ def generate_lookup_hash(credentials: dict) -> str:
     return hashlib.md5(json.dumps(credentials, sort_keys=True).encode()).hexdigest()
 
 
-class AnswerTypeChoices(Enum):
+class AnswerTypeChoices(int, Enum):
     TEXT = 0
     SENSITIVE = 1
     CHOICE = 2
@@ -44,7 +44,7 @@ class CredentialType(str, Enum):
     PAYMENT_CARD_ID = 'payment_card_id'
 
 
-class EncryptedCredentials(Enum):
+class EncryptedCredentials(str, Enum):
     PASSWORD = CredentialType.PASSWORD.value
     POSTCODE = CredentialType.POSTCODE.value
     MEMORABLE_DATE = CredentialType.MEMORABLE_DATE.value

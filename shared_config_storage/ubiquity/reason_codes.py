@@ -55,7 +55,8 @@ CURRENT_STATUS_CODES = (
     (537, 'Service connection error'),
     (538, 'A system error occurred during join'),
     (900, 'Join'),
-    (901, 'Join Failed')
+    (901, 'Join Failed'),
+    (902, 'Registration Failed'),
 )
 
 reason_code_translation = {
@@ -93,7 +94,8 @@ reason_code_translation = {
     537: None,
     538: None,
     900: 'X201',
-    901: 'X201'
+    901: 'X201',
+    902: 'X105',
 }
 
 ubiquity_status_translation = {
@@ -131,7 +133,8 @@ ubiquity_status_translation = {
     537: 'failed',
     538: 'failed',
     900: 'failed',
-    901: 'failed'
+    901: 'failed',
+    902: 'failed',
 }
 
 

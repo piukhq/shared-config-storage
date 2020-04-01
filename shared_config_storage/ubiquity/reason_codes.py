@@ -55,7 +55,7 @@ CURRENT_STATUS_CODES = (
     (537, 'Service connection error'),
     (538, 'A system error occurred during join'),
     (900, 'Join'),
-    (901, 'Join Failed'),
+    (901, 'Enrol Failed'),
     (902, 'Registration Failed'),
 )
 

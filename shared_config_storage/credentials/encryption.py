@@ -9,7 +9,9 @@ from Crypto import Random
 from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.Hash import BLAKE2s
 from Crypto.PublicKey import RSA
+from Crypto.PublicKey.RSA import RsaKey
 from hvac.exceptions import Forbidden
+
 
 
 class KeyTypes(str, Enum):
@@ -83,20 +85,23 @@ class RSACipher:
         # encrypted byte string cannot be sent in JSON so must be converted
         return base64.b64encode(encrypted_val).decode('utf-8')
 
-    def decrypt(self, val: str, priv_key: str = None) -> str:
+    def decrypt(self, val: str, priv_key: str = None, rsa_key=None) -> str:
         try:
             val = base64.b64decode(val.encode())
         except AttributeError as e:
             err_msg = f"Unable to decrypt value. Value must be of type string: {val}"
             raise TypeError(err_msg) from e
 
-        provided_key = priv_key or self.priv_key
-        if not provided_key:
-            provided_key = self.get_secret_key(self.keys_path, KeyTypes.PRIVATE_KEY)
+        if rsa_key and isinstance(rsa_key, RsaKey):
+            key = rsa_key
+        else:
+            provided_key = priv_key or self.priv_key
+            if not provided_key:
+                provided_key = self.get_secret_key(self.keys_path, KeyTypes.PRIVATE_KEY)
 
-        key = RSA.import_key(provided_key)
+            key = RSA.import_key(provided_key)
+
         cipher = PKCS1_OAEP.new(key)
-
         decrypted_val = cipher.decrypt(val).decode('utf-8')
         return decrypted_val
 

@@ -4,13 +4,13 @@ from enum import Enum
 from typing import Union, Dict, Iterable
 
 import hvac
+import hvac.exceptions
 import requests
 from Crypto import Random
 from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.Hash import BLAKE2s
 from Crypto.PublicKey import RSA
 from Crypto.PublicKey.RSA import RsaKey
-from hvac.exceptions import Forbidden
 
 
 class KeyTypes(str, Enum):

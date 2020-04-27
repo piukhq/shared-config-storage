@@ -13,7 +13,6 @@ from Crypto.PublicKey.RSA import RsaKey
 from hvac.exceptions import Forbidden
 
 
-
 class KeyTypes(str, Enum):
     PUBLIC_KEY = "public_key"
     PRIVATE_KEY = "private_key"
@@ -60,6 +59,7 @@ class RSACipher:
     key size (2048 bits = 256 bytes), minus any padding and header data
     (11 bytes for PKCS#1 v1. 5 padding)
     """
+
     def __init__(
             self,
             vault_token: str = None,
@@ -85,7 +85,7 @@ class RSACipher:
         # encrypted byte string cannot be sent in JSON so must be converted
         return base64.b64encode(encrypted_val).decode('utf-8')
 
-    def decrypt(self, val: str, priv_key: str = None, rsa_key=None) -> str:
+    def decrypt(self, val: str, priv_key: str = None, rsa_key: RsaKey = None) -> str:
         try:
             val = base64.b64decode(val.encode())
         except AttributeError as e:
@@ -139,6 +139,7 @@ class BLAKE2sHash:
     :param secret_path: Path in the Vault where the hash secret is stored
     :param key_name: Name of the secret under which it is stored
     """
+
     def __init__(
             self,
             vault_token: str = None,

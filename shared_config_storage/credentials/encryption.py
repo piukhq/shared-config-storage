@@ -4,12 +4,13 @@ from enum import Enum
 from typing import Union, Dict, Iterable
 
 import hvac
+import hvac.exceptions
 import requests
 from Crypto import Random
 from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.Hash import BLAKE2s
 from Crypto.PublicKey import RSA
-from hvac.exceptions import Forbidden
+from Crypto.PublicKey.RSA import RsaKey
 
 
 class KeyTypes(str, Enum):
@@ -58,6 +59,7 @@ class RSACipher:
     key size (2048 bits = 256 bytes), minus any padding and header data
     (11 bytes for PKCS#1 v1. 5 padding)
     """
+
     def __init__(
             self,
             vault_token: str = None,
@@ -83,20 +85,23 @@ class RSACipher:
         # encrypted byte string cannot be sent in JSON so must be converted
         return base64.b64encode(encrypted_val).decode('utf-8')
 
-    def decrypt(self, val: str, priv_key: str = None) -> str:
+    def decrypt(self, val: str, priv_key: str = None, rsa_key: RsaKey = None) -> str:
         try:
             val = base64.b64decode(val.encode())
         except AttributeError as e:
             err_msg = f"Unable to decrypt value. Value must be of type string: {val}"
             raise TypeError(err_msg) from e
 
-        provided_key = priv_key or self.priv_key
-        if not provided_key:
-            provided_key = self.get_secret_key(self.keys_path, KeyTypes.PRIVATE_KEY)
+        if rsa_key and isinstance(rsa_key, RsaKey):
+            key = rsa_key
+        else:
+            provided_key = priv_key or self.priv_key
+            if not provided_key:
+                provided_key = self.get_secret_key(self.keys_path, KeyTypes.PRIVATE_KEY)
 
-        key = RSA.import_key(provided_key)
+            key = RSA.import_key(provided_key)
+
         cipher = PKCS1_OAEP.new(key)
-
         decrypted_val = cipher.decrypt(val).decode('utf-8')
         return decrypted_val
 
@@ -134,6 +139,7 @@ class BLAKE2sHash:
     :param secret_path: Path in the Vault where the hash secret is stored
     :param key_name: Name of the secret under which it is stored
     """
+
     def __init__(
             self,
             vault_token: str = None,

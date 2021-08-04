@@ -1,11 +1,13 @@
 import base64
 import hashlib
+
 from enum import Enum
-from typing import Union, Dict, Iterable
+from typing import Dict, Iterable, Optional, Union
 
 import hvac
 import hvac.exceptions
 import requests
+
 from Crypto import Random
 from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.Hash import BLAKE2s
@@ -20,33 +22,33 @@ class KeyTypes(str, Enum):
 
 
 class AESCipher(object):
-    def __init__(self, key):
+    def __init__(self, key: bytes) -> None:
         self.bs = 32
         self.key = hashlib.sha256(key).digest()
 
-    def encrypt(self, raw):
-        if raw == '':
-            raise TypeError('Cannot encrypt nothing')
-        raw = self._pad(raw.encode('utf-8'))
+    def encrypt(self, raw: str) -> bytes:
+        if raw == "":
+            raise TypeError("Cannot encrypt nothing")
+        padded = self._pad(raw.encode("utf-8"))
         iv = Random.new().read(AES.block_size)
         cipher = AES.new(self.key, AES.MODE_CBC, iv)
-        return base64.b64encode(iv + cipher.encrypt(raw))
+        return base64.b64encode(iv + cipher.encrypt(padded))
 
-    def decrypt(self, enc):
-        if enc == '':
-            raise TypeError('Cannot decrypt nothing')
-        enc = base64.b64decode(enc)
-        iv = enc[:AES.block_size]
+    def decrypt(self, enc: str) -> str:
+        if enc == "":
+            raise TypeError("Cannot decrypt nothing")
+        raw = base64.b64decode(enc)
+        iv = raw[: AES.block_size]
         cipher = AES.new(self.key, AES.MODE_CBC, iv)
-        return self._unpad(cipher.decrypt(enc[AES.block_size:])).decode('utf-8')
+        return self._unpad(cipher.decrypt(raw[AES.block_size :])).decode("utf-8")
 
-    def _pad(self, s):
+    def _pad(self, s: bytes) -> bytes:
         length = self.bs - (len(s) % self.bs)
         return s + bytes([length]) * length
 
     @staticmethod
-    def _unpad(s):
-        return s[:-ord(s[len(s) - 1:])]
+    def _unpad(s: bytes) -> bytes:
+        return s[: -ord(s[len(s) - 1 :])]
 
 
 class RSACipher:
@@ -60,12 +62,7 @@ class RSACipher:
     (11 bytes for PKCS#1 v1. 5 padding)
     """
 
-    def __init__(
-            self,
-            vault_token: str = None,
-            vault_url: str = None,
-            keys_path: str = None
-    ) -> None:
+    def __init__(self, vault_token: str = None, vault_url: str = None, keys_path: str = None) -> None:
         self.pub_key = None
         self.priv_key = None
         self.keys_path = keys_path
@@ -83,11 +80,11 @@ class RSACipher:
         # convert all values to string before encoding as some values may be integers
         encrypted_val = cipher.encrypt(str(val).encode())
         # encrypted byte string cannot be sent in JSON so must be converted
-        return base64.b64encode(encrypted_val).decode('utf-8')
+        return base64.b64encode(encrypted_val).decode("utf-8")
 
     def decrypt(self, val: str, priv_key: str = None, rsa_key: RsaKey = None) -> str:
         try:
-            val = base64.b64decode(val.encode())
+            raw = base64.b64decode(val.encode())
         except AttributeError as e:
             err_msg = f"Unable to decrypt value. Value must be of type string: {val}"
             raise TypeError(err_msg) from e
@@ -102,10 +99,10 @@ class RSACipher:
             key = RSA.import_key(provided_key)
 
         cipher = PKCS1_OAEP.new(key)
-        decrypted_val = cipher.decrypt(val).decode('utf-8')
+        decrypted_val = cipher.decrypt(raw).decode("utf-8")
         return decrypted_val
 
-    def get_secret_key(self, save_path: str, key_name: str) -> str:
+    def get_secret_key(self, save_path: Optional[str], key_name: str) -> str:
         if not self.vault_url and self.vault_token:
             raise AttributeError("Missing vault token and vault url")
 
@@ -116,12 +113,12 @@ class RSACipher:
 
         client = hvac.Client(token=self.vault_token, url=self.vault_url)
         try:
-            val = client.read(f'secret/{save_path}')['data']['data'][key_name]
+            val = client.read(f"secret/{save_path}")["data"]["data"][key_name]
             return val
         except TypeError as e:
-            raise ValueError('Could not locate security credentials in vault') from e
+            raise ValueError("Could not locate security credentials in vault") from e
         except (requests.RequestException, hvac.exceptions.VaultError) as e:
-            raise ConnectionError('Error connecting to vault') from e
+            raise ConnectionError("Error connecting to vault") from e
 
 
 class BLAKE2sHash:
@@ -141,11 +138,11 @@ class BLAKE2sHash:
     """
 
     def __init__(
-            self,
-            vault_token: str = None,
-            vault_url: str = None,
-            secret_path: str = 'pcard_hash_secret',
-            key_name: str = 'salt'
+        self,
+        vault_token: str = None,
+        vault_url: str = None,
+        secret_path: str = "pcard_hash_secret",
+        key_name: str = "salt",
     ) -> None:
         self.vault_token = vault_token
         self.vault_url = vault_url
@@ -165,7 +162,7 @@ class BLAKE2sHash:
 
         client = hvac.Client(token=self.vault_token, url=self.vault_url)
         try:
-            val = client.read(f'secret/data/{path}')['data']['data'][key_name]
+            val = client.read(f"secret/data/{path}")["data"]["data"][key_name]
         except TypeError as e:
             raise ValueError("Could not locate security credentials in vault") from e
         except (requests.RequestException, hvac.exceptions.VaultError) as e:

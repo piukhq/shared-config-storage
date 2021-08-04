@@ -2,7 +2,7 @@ import base64
 import hashlib
 
 from enum import Enum
-from typing import Dict, Iterable, Union
+from typing import Dict, Iterable, Union, Optional
 
 import hvac
 import hvac.exceptions
@@ -22,33 +22,33 @@ class KeyTypes(str, Enum):
 
 
 class AESCipher(object):
-    def __init__(self, key):
+    def __init__(self, key: bytes) -> None:
         self.bs = 32
         self.key = hashlib.sha256(key).digest()
 
-    def encrypt(self, raw):
+    def encrypt(self, raw: str) -> bytes:
         if raw == "":
             raise TypeError("Cannot encrypt nothing")
-        raw = self._pad(raw.encode("utf-8"))
+        padded = self._pad(raw.encode("utf-8"))
         iv = Random.new().read(AES.block_size)
         cipher = AES.new(self.key, AES.MODE_CBC, iv)
-        return base64.b64encode(iv + cipher.encrypt(raw))
+        return base64.b64encode(iv + cipher.encrypt(padded))
 
-    def decrypt(self, enc):
+    def decrypt(self, enc: str) -> str:
         if enc == "":
             raise TypeError("Cannot decrypt nothing")
-        enc = base64.b64decode(enc)
-        iv = enc[: AES.block_size]
+        raw = base64.b64decode(enc)
+        iv = raw[: AES.block_size]
         cipher = AES.new(self.key, AES.MODE_CBC, iv)
-        return self._unpad(cipher.decrypt(enc[AES.block_size :])).decode("utf-8")
+        return self._unpad(cipher.decrypt(raw[AES.block_size:])).decode("utf-8")
 
-    def _pad(self, s):
+    def _pad(self, s: bytes) -> bytes:
         length = self.bs - (len(s) % self.bs)
         return s + bytes([length]) * length
 
     @staticmethod
-    def _unpad(s):
-        return s[: -ord(s[len(s) - 1 :])]
+    def _unpad(s: bytes) -> bytes:
+        return s[: -ord(s[len(s) - 1:])]
 
 
 class RSACipher:
@@ -84,7 +84,7 @@ class RSACipher:
 
     def decrypt(self, val: str, priv_key: str = None, rsa_key: RsaKey = None) -> str:
         try:
-            val = base64.b64decode(val.encode())
+            raw = base64.b64decode(val.encode())
         except AttributeError as e:
             err_msg = f"Unable to decrypt value. Value must be of type string: {val}"
             raise TypeError(err_msg) from e
@@ -99,10 +99,10 @@ class RSACipher:
             key = RSA.import_key(provided_key)
 
         cipher = PKCS1_OAEP.new(key)
-        decrypted_val = cipher.decrypt(val).decode("utf-8")
+        decrypted_val = cipher.decrypt(raw).decode("utf-8")
         return decrypted_val
 
-    def get_secret_key(self, save_path: str, key_name: str) -> str:
+    def get_secret_key(self, save_path: Optional[str], key_name: str) -> str:
         if not self.vault_url and self.vault_token:
             raise AttributeError("Missing vault token and vault url")
 

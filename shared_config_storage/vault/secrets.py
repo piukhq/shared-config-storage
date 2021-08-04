@@ -1,17 +1,18 @@
 import requests
+from typing import Optional
 
 
 class VaultError(Exception):
     """Exception raised for errors in the input."""
 
-    def __init__(self, message=None):
+    def __init__(self, message: Optional[str] = None) -> None:
         self.message = message
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Vault Error: {self.message}"
 
 
-def read_vault(secret_path, url, token):
+def read_vault(secret_path: str, url: str, token: str) -> dict:
     """
 
     :param secret_path: path within the secrets engine eg  /channels or /data

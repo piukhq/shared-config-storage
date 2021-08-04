@@ -2,7 +2,7 @@ import base64
 import hashlib
 
 from enum import Enum
-from typing import Dict, Iterable, Union, Optional
+from typing import Dict, Iterable, Optional, Union
 
 import hvac
 import hvac.exceptions
@@ -40,7 +40,7 @@ class AESCipher(object):
         raw = base64.b64decode(enc)
         iv = raw[: AES.block_size]
         cipher = AES.new(self.key, AES.MODE_CBC, iv)
-        return self._unpad(cipher.decrypt(raw[AES.block_size:])).decode("utf-8")
+        return self._unpad(cipher.decrypt(raw[AES.block_size :])).decode("utf-8")
 
     def _pad(self, s: bytes) -> bytes:
         length = self.bs - (len(s) % self.bs)
@@ -48,7 +48,7 @@ class AESCipher(object):
 
     @staticmethod
     def _unpad(s: bytes) -> bytes:
-        return s[: -ord(s[len(s) - 1:])]
+        return s[: -ord(s[len(s) - 1 :])]
 
 
 class RSACipher:

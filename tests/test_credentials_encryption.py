@@ -1,20 +1,16 @@
-import pytest
 import random
 import string
+
+import pytest
 
 from shared_config_storage.credentials import encryption
 
 
 def random_string(n: int) -> str:
-    return ''.join(random.choices(string.printable, k=n))
+    return "".join(random.choices(string.printable, k=n))
 
 
-@pytest.mark.parametrize("key_length,data_length", [
-    (5, 20),
-    (12, 42),
-    (26, 7),
-    (42, 42)
-])
+@pytest.mark.parametrize("key_length,data_length", [(5, 20), (12, 42), (26, 7), (42, 42)])
 def test_aes_encryption_decryption(key_length, data_length):
     key = random_string(key_length).encode()
     data = random_string(data_length)
@@ -29,7 +25,7 @@ def test_aes_encryption_decryption(key_length, data_length):
 
 
 def test_aes_encryption_decryption_no_data():
-    aes = encryption.AESCipher(b'test')
+    aes = encryption.AESCipher(b"test")
 
     with pytest.raises(TypeError):
         aes.encrypt("")
@@ -51,11 +47,14 @@ def test_rsa_encryption_decryption(vault, key_pair):
     assert plaintext == original
 
 
-@pytest.mark.parametrize("key,digest_bits,data,expected", [
-    ("testkey1234", 256, "somedata", "db0a2f4f2a509c07722486b0f9685a2ca8350fbde5853fb1200d8b7cbd12f521"),
-    ("somekey", 128, "somedata2", "f0b8cfe4a72fea368af7cb9805488b12"),
-    ("lol", 64, "somedata3", "dd63790467eecf2b"),
-])
+@pytest.mark.parametrize(
+    "key,digest_bits,data,expected",
+    [
+        ("testkey1234", 256, "somedata", "db0a2f4f2a509c07722486b0f9685a2ca8350fbde5853fb1200d8b7cbd12f521"),
+        ("somekey", 128, "somedata2", "f0b8cfe4a72fea368af7cb9805488b12"),
+        ("lol", 64, "somedata3", "dd63790467eecf2b"),
+    ],
+)
 def test_blake2_hashes(key, digest_bits, data, expected):
     blake2 = encryption.BLAKE2sHash()
     hash_value = blake2.new(data, digest_bits, key)

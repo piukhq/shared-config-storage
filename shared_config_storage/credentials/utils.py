@@ -1,5 +1,6 @@
 import hashlib
 import json
+
 from enum import Enum
 
 
@@ -16,32 +17,32 @@ class AnswerTypeChoices(int, Enum):
 
 
 class CredentialType(str, Enum):
-    USER_NAME = 'username'
-    CARD_NUMBER = 'card_number'
-    BARCODE = 'barcode'
-    PASSWORD = 'password'
-    PLACE_OF_BIRTH = 'place_of_birth'
-    EMAIL = 'email'
-    POSTCODE = 'postcode'
-    MEMORABLE_DATE = 'memorable_date'
-    PIN = 'pin'
-    TITLE = 'title'
-    FIRST_NAME = 'first_name'
-    LAST_NAME = 'last_name'
-    FAVOURITE_PLACE = 'favourite_place'
-    DATE_OF_BIRTH = 'date_of_birth'
-    PHONE = 'phone'
-    PHONE_2 = 'phone_2'
-    GENDER = 'gender'
-    ADDRESS_1 = 'address_1'
-    ADDRESS_2 = 'address_2'
-    ADDRESS_3 = 'address_3'
-    TOWN_CITY = 'town_city'
-    COUNTY = 'county'
-    COUNTRY = 'country'
-    REGULAR_RESTAURANT = 'regular_restaurant'
-    MERCHANT_IDENTIFIER = 'merchant_identifier'
-    PAYMENT_CARD_ID = 'payment_card_id'
+    USER_NAME = "username"
+    CARD_NUMBER = "card_number"
+    BARCODE = "barcode"
+    PASSWORD = "password"
+    PLACE_OF_BIRTH = "place_of_birth"
+    EMAIL = "email"
+    POSTCODE = "postcode"
+    MEMORABLE_DATE = "memorable_date"
+    PIN = "pin"
+    TITLE = "title"
+    FIRST_NAME = "first_name"
+    LAST_NAME = "last_name"
+    FAVOURITE_PLACE = "favourite_place"
+    DATE_OF_BIRTH = "date_of_birth"
+    PHONE = "phone"
+    PHONE_2 = "phone_2"
+    GENDER = "gender"
+    ADDRESS_1 = "address_1"
+    ADDRESS_2 = "address_2"
+    ADDRESS_3 = "address_3"
+    TOWN_CITY = "town_city"
+    COUNTY = "county"
+    COUNTRY = "country"
+    REGULAR_RESTAURANT = "regular_restaurant"
+    MERCHANT_IDENTIFIER = "merchant_identifier"
+    PAYMENT_CARD_ID = "payment_card_id"
 
 
 class EncryptedCredentials(str, Enum):

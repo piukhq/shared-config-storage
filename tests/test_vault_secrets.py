@@ -1,4 +1,5 @@
 import pytest
+
 from shared_config_storage.vault import secrets
 
 

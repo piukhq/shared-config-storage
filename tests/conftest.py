@@ -1,8 +1,7 @@
-import string
+from typing import Any, Dict
 
 import pytest
-import random
-from typing import Dict, Any
+
 from pytest_httpserver import HTTPServer
 
 
@@ -68,20 +67,11 @@ TEST_PRIVATE_KEY = (
 )
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def key_pair():
-    return {
-        "data": {
-            "public_key": TEST_PUBLIC_KEY,
-            "private_key": TEST_PRIVATE_KEY
-        }
-    }
+    return {"data": {"public_key": TEST_PUBLIC_KEY, "private_key": TEST_PRIVATE_KEY}}
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def blake_salt():
-    return {
-        "data": {
-            "salt": 'dd63790467eecf2b'
-        }
-    }
+    return {"data": {"salt": "dd63790467eecf2b"}}

@@ -1,18 +1,19 @@
+from typing import Optional
+
 import requests
 
 
 class VaultError(Exception):
-    """Exception raised for errors in the input.
-    """
+    """Exception raised for errors in the input."""
 
-    def __init__(self, message=None):
+    def __init__(self, message: Optional[str] = None) -> None:
         self.message = message
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Vault Error: {self.message}"
 
 
-def read_vault(secret_path, url, token):
+def read_vault(secret_path: str, url: str, token: str) -> dict:
     """
 
     :param secret_path: path within the secrets engine eg  /channels or /data
@@ -29,15 +30,12 @@ def read_vault(secret_path, url, token):
 
 
     """
-    headers = {
-        "X-Vault-Token": token
-
-    }
+    headers = {"X-Vault-Token": token}
     path = f"{url}/v1/secret{secret_path}"
     try:
         response = requests.get(path, headers=headers)
         if response.status_code != 200:
-            raise VaultError(f'Error connecting status code {response.status_code}')
+            raise VaultError(f"Error connecting status code {response.status_code}")
     except requests.RequestException as e:
-        raise VaultError('Error connecting') from e
-    return response.json().get('data', {})
+        raise VaultError("Error connecting") from e
+    return response.json().get("data", {})

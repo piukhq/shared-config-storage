@@ -11,7 +11,6 @@ def test_read_vault_bad_status(vault):
 
 
 def test_read_vault_timeout():
-
     with pytest.raises(secrets.VaultError):
         secrets.read_vault("/data", "http://0.0.0.0/", "sometoken")
 

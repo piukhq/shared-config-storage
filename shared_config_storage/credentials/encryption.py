@@ -62,14 +62,16 @@ class RSACipher:
     (11 bytes for PKCS#1 v1. 5 padding)
     """
 
-    def __init__(self, vault_token: str = None, vault_url: str = None, keys_path: str = None) -> None:
+    def __init__(
+        self, vault_token: Optional[str] = None, vault_url: Optional[str] = None, keys_path: Optional[str] = None
+    ) -> None:
         self.pub_key = None
         self.priv_key = None
         self.keys_path = keys_path
         self.vault_token = vault_token
         self.vault_url = vault_url
 
-    def encrypt(self, val: Union[str, int, Dict, Iterable], pub_key: str = None) -> str:
+    def encrypt(self, val: Union[str, int, Dict, Iterable], pub_key: Optional[str] = None) -> str:
         provided_key = pub_key or self.pub_key
         if not provided_key:
             provided_key = self.get_secret_key(self.keys_path, KeyTypes.PUBLIC_KEY)
@@ -82,7 +84,7 @@ class RSACipher:
         # encrypted byte string cannot be sent in JSON so must be converted
         return base64.b64encode(encrypted_val).decode("utf-8")
 
-    def decrypt(self, val: str, priv_key: str = None, rsa_key: RsaKey = None) -> str:
+    def decrypt(self, val: str, priv_key: Optional[str] = None, rsa_key: Optional[RsaKey] = None) -> str:
         try:
             raw = base64.b64decode(val.encode())
         except AttributeError as e:
@@ -139,8 +141,8 @@ class BLAKE2sHash:
 
     def __init__(
         self,
-        vault_token: str = None,
-        vault_url: str = None,
+        vault_token: Optional[str] = None,
+        vault_url: Optional[str] = None,
         secret_path: str = "pcard_hash_secret",
         key_name: str = "salt",
     ) -> None:
@@ -150,7 +152,7 @@ class BLAKE2sHash:
         self.secret_path = secret_path
         self.key_name = key_name
 
-    def get_secret_key(self, path: str = None, key_name: str = None) -> str:
+    def get_secret_key(self, path: Optional[str] = None, key_name: Optional[str] = None) -> str:
         if self.hash_secret:
             return self.hash_secret
 
@@ -171,7 +173,7 @@ class BLAKE2sHash:
         self.hash_secret = val
         return val
 
-    def new(self, obj: str, digest_bits: int = 256, key: str = None) -> str:
+    def new(self, obj: str, digest_bits: int = 256, key: Optional[str] = None) -> str:
         if not key:
             try:
                 key = self.get_secret_key(self.secret_path, key_name=self.key_name)
